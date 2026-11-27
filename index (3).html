@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="te"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TomatoSetu – టమాటో సేతు</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1c2a1e;--leaf:#2e7d32;--leafl:#e8f3e6;--red:#d6342a;--redd:#b02720;--line:#c9dcc5;--bg:#f3f8f1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 "Noto Sans Telugu",system-ui,sans-serif}
+#app{max-width:480px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;background:#fff;border-inline:1px solid var(--line)}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.logo{width:30px;height:30px;border-radius:50%;background:var(--red);position:relative}
+.logo:after{content:"";position:absolute;top:-4px;left:10px;width:11px;height:8px;background:var(--leaf);border-radius:60% 0}
+header b{font-size:1.15rem;font-weight:800}header small{color:var(--leaf);font-weight:600}
+#banner{background:#fff4d6;padding:6px 14px;font-size:.78rem}
+#note{padding:0 14px;font-size:.78rem;color:var(--redd);min-height:0}
+#chat{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.b{max-width:90%;padding:10px 12px;border-radius:14px}
+.bot{background:var(--leafl);align-self:flex-start;border-bottom-left-radius:4px}
+.u{background:var(--red);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.te{font-size:1.05rem;font-weight:600}.en{font-size:.82rem;opacity:.75;margin-top:3px}
+.cards{display:flex;flex-direction:column;gap:8px}
+.card{border:2px solid var(--line);border-radius:12px;padding:10px 12px}
+.card.top{border-color:var(--leaf);background:#f7fcf5}
+.card h3{margin:0;font-size:1rem}.card p{margin:2px 0;font-size:.88rem}
+.tag{display:inline-block;font-size:.7rem;background:#fff4d6;border-radius:6px;padding:1px 6px;margin-right:4px}
+.ctl{padding:8px 14px 12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+#chips{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;cursor:pointer}
+.chip{border:1.5px solid var(--leaf);background:#fff;color:var(--leaf);border-radius:20px;padding:6px 12px;font-weight:600}
+#yn{display:flex;gap:8px}#yn[hidden],#nx[hidden]{display:none}
+#yn button{flex:1;padding:14px 8px;border:0;border-radius:12px;color:#fff;font-weight:800;font-size:1.05rem}
+.yes{background:var(--leaf)}.no{background:var(--redd)}#nx{background:#555!important}
+#f{display:flex;gap:6px}#txt{flex:1;padding:10px;border:1.5px solid var(--line);border-radius:10px;font:inherit}
+#f button,.row button:not(#mic){border:1.5px solid var(--leaf);background:#fff;color:var(--leaf);border-radius:10px;padding:8px 12px;font-weight:600}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#mic{width:76px;height:76px;border-radius:50%;border:0;background:var(--red);color:#fff;font-size:2rem;box-shadow:0 4px 12px #d6342a55}
+#mic.on{background:var(--leaf);animation:p 1s infinite}
+@keyframes p{50%{box-shadow:0 0 0 14px #2e7d3233}}
+@media(prefers-reduced-motion:reduce){#mic.on{animation:none}}
+:focus-visible{outline:3px solid #1a5fb4;outline-offset:2px}
+dialog{border:0;border-radius:16px;max-width:440px;width:92%;padding:18px}
+dialog::backdrop{background:#0006}
+dialog h2{margin:0 0 6px;font-size:1.2rem}dialog p{margin:4px 0}.ok{color:var(--leaf);font-weight:600}
+dialog select,dialog input{width:100%;padding:8px;margin:3px 0 8px;border:1.5px solid var(--line);border-radius:8px;font:inherit}
+.dbtn{width:100%;padding:12px;border:0;border-radius:10px;background:var(--leaf);color:#fff;font-weight:800}
+.bl{font-size:.85rem;margin:0 0 10px;padding:0;list-style:none}.bl li{padding:4px 0;border-bottom:1px solid var(--line)}
+</style></head><body>
+<div id="app">
+<header><div class="logo"></div><div><b>TomatoSetu · టమాటో సేతు</b><br><small>Speak. Find a buyer. Sell today.</small></div></header>
+<div id="banner">Demo data: buyers, prices and distances are samples, not live market information.</div>
+<div id="note" role="status"></div>
+<div id="chat" aria-live="polite"></div>
+<div class="ctl">
+<div id="chips"></div>
+<div id="yn" hidden><button class="yes" data-v="avunu">అవును · Yes</button><button class="no" data-v="kaadu">కాదు · No</button><button id="nx" hidden data-v="inkoka">ఇంకొక · Next</button></div>
+<form id="f"><input id="txt" placeholder="Type instead · ఇక్కడ టైప్ చేయండి" autocomplete="off"><button>Send</button></form>
+<div class="row"><button id="demo">▶ Try sample farmer</button><button id="mic" aria-label="Tap to speak">🎤</button><button id="bz">Buyers</button></div>
+</div></div>
+
+<dialog id="cd"><div id="cb"></div>
+<label>Pickup time · పికప్ సమయం<select id="pk"><option>Now</option><option selected>Within 1 hour</option><option>Within 2 hours</option><option>This evening</option></select></label>
+<p class="ok" id="st"></p><p><small>Simulated connection: no real call or message is sent.</small></p>
+<button class="dbtn" id="cdone">Done · పూర్తి</button></dialog>
+
+<dialog id="bd"><h2>Registered buyers (sample)</h2><ul class="bl" id="bl"></ul>
+<form id="bf"><b>Register a buyer</b>
+<input id="bn" placeholder="Buyer name" required>
+<select id="bp"></select>
+<input id="bk" type="number" min="1" placeholder="Kilos needed today" required>
+<input id="bpr" type="number" min="1" step="0.5" placeholder="Price offered ₹/kg" required>
+<button class="dbtn">Add buyer</button></form>
+<button class="dbtn" style="background:#555;margin-top:8px" id="bclose">Close</button></dialog>
+
+<script>
+const $=s=>document.querySelector(s),chat=$('#chat'),mic=$('#mic');
+const V=[['kakinada','కాకినాడ','Kakinada',16.9891,82.2475],['samalkot','సామర్లకోట','Samalkot',17.0537,82.1741],['pithapuram','పిఠాపురం','Pithapuram',17.1166,82.2530],['peddapuram','పెద్దాపురం','Peddapuram',17.0773,82.1360],['tuni','తుని','Tuni',17.3577,82.5470],['rajahmundry','రాజమండ్రి','Rajahmundry',17.0005,81.8040]].map(([id,te,en,lat,lon])=>({id,te,en,lat,lon}));
+let B=[['Ramesh Trader','Kakinada',16.96,82.24,200,14,1],['Lakshmi Vegetable Mart','Samalkot',17.05,82.18,150,15,1],['Sri Sai Collection Centre','Peddapuram',17.08,82.14,500,12.5,1],['Godavari Fresh Foods','Rajahmundry',17.0,81.81,800,11,0],['Anil Hotel Supplies','Pithapuram',17.12,82.26,100,16,1],['Tuni Wholesale','Tuni',17.36,82.54,400,13,1],['Venkat Vendor','Kakinada',16.97,82.23,60,17,1],['Padma Mess Kitchen','Kakinada',16.99,82.25,80,15.5,1]].map(([name,place,lat,lon,kg,price,today])=>({name,place,lat,lon,kg,price,today}));
+let F={},step='sell',matches=[],idx=0,pend=null,fails=0,silent=0,micUsed=0,listening=0,demo=[],rec=null,tok=0,lastQ=['',''];
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const YES=/అవును|సరే|avunu|yes|haan|sare|\bok\b/i,NO=/కాదు|లేదు|వద్దు|kaadu|kadu|\bno\b|vaddu|ledu/i,NEXT=/ఇంకొక|inkoka|another|next/i;
+const TODAY=/ఈ రోజు|ఈరోజు|ఇవాళ|today|taaja|తాజా|fresh|ee roje|ivale/i,YEST=/నిన్న|yesterday|ninna|\bkal\b/i,SKIP=/తెలియదు|teliyadu|don.?t know|skip/i;
+const U={రెండు:2,rendu:2,మూడు:3,moodu:3,నాలుగు:4,ఐదు:5,ఆరు:6,ఏడు:7,ఎనిమిది:8,తొమ్మిది:9,పది:10,ఇరవై:20,irvai:20,ముప్పై:30,muppai:30,నలభై:40,nalabhai:40,యాభై:50,yabhai:50,అరవై:60,డెబ్బై:70,ఎనభై:80,తొంభై:90};
+const HUN=/^(వంద|నూరు|నూర్|noorru|vanda|hundred)/i;
+function num(t){const m=t.match(/\d+(\.\d+)?/);if(m)return +m[0];let tot=0,cur=0,hit=0;for(const w of t.toLowerCase().split(/[\s,.]+/)){if(HUN.test(w)){cur=(cur||1)*100;tot+=cur;cur=0;hit=1}else if(U[w]){cur+=U[w];hit=1}}return hit?tot+cur:0}
+const findV=t=>{t=t.toLowerCase();return V.find(v=>t.includes(v.id)||t.includes(v.te))||(/samalakota/.test(t)?V[1]:/pitapuram/.test(t)?V[2]:/rajamahendravaram|rajamundry/.test(t)?V[5]:null)};
+const km=(a,b)=>{const r=x=>x*Math.PI/180,dl=r(b.lat-a.lat),dn=r(b.lon-a.lon),h=Math.sin(dl/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dn/2)**2;return Math.round(12742*Math.asin(Math.sqrt(h))*10)/10};
+function h(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function note(m){$('#note').textContent=m}
+function user(t){const b=h('div','b u',t);chat.append(b);chat.scrollTop=chat.scrollHeight}
+const teVoice=()=>('speechSynthesis' in window)&&speechSynthesis.getVoices().find(v=>v.lang.toLowerCase().startsWith('te'));
+function speak(t,go){const v=teVoice();if(!v)return false;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='te-IN';u.voice=v;u.rate=.9;u.onend=u.onerror=go;speechSynthesis.speak(u);return true}
+function say(te,en){lastQ=[te,en];const b=h('div','b bot');b.append(h('div','te',te),h('div','en',en));chat.append(b);chat.scrollTop=chat.scrollHeight;ui();
+ const t=++tok,go=()=>{if(t===tok){tok++;afterSpeak()}};
+ if(!speak(te,go))setTimeout(go,1300);else setTimeout(go,15000)}
+function afterSpeak(){if(demo.length){setTimeout(()=>{const t=demo.shift();if(t){user(t);handle(t)}},600);return}if(micUsed&&!listening&&SR&&step!=='done')listen()}
+function ui(){const c=$('#chips');c.replaceChildren();const add=(l,v)=>{const b=h('button','chip',l);b.onclick=()=>send(v);c.append(b)};
+ if(step==='village')V.forEach(v=>add(v.te+' · '+v.en,v.id));
+ if(step==='fresh'){add('ఈ రోజు · Today','today');add('నిన్న · Yesterday','yesterday')}
+ if(step==='price')add('తెలియదు · Don’t know','teliyadu');
+ if(step==='fixwhich'){add('ఊరు · Village','village');add('కిలోలు · Kilos','kilo');add('ధర · Price','price')}
+ if(step==='nobuyer'){const b=h('button','chip','నాకు చెప్పండి · Notify me');b.onclick=notify;c.append(b)}
+ $('#yn').hidden=!['confirm','sanity','offer'].includes(step);$('#nx').hidden=step!=='offer';
+ $('#txt').inputMode=['qty','price','sanity'].includes(step)?'numeric':'text'}
+const send=t=>{user(t);handle(t)};
+const Q={qty:['ఎన్ని కిలోలు ఉన్నాయి?','How many kilos do you have?'],village:['మీ ఊరు ఏది?','Which village are you in?'],fresh:['పంట ఈ రోజు కోసినదా, లేక నిన్న కోసినదా?','Was the crop harvested today or yesterday?'],price:['కిలోకు ఎంత ధర కావాలి? తెలియకపోతే “తెలియదు” అనండి.','Expected price per kg? Say “teliyadu” if you are not sure.']};
+function proceed(){const k=!F.q?'qty':!F.v?'village':!F.f?'fresh':!F.pa?'price':null;
+ if(k){step=k;say(...Q[k]);return}
+ step='confirm';const p=F.p;
+ say(`${F.q} కిలోల టమాటాలు, ${F.v.te}, ${F.f==='t'?'ఈ రోజు కోసినవి':'నిన్న కోసినవి'}, ${p?`కిలోకు ${p} రూపాయలు`:'ధర చెప్పలేదు'}. సరేనా?`,`${F.q} kg tomatoes, ${F.v.en}, harvested ${F.f==='t'?'today':'yesterday'}, ${p?'₹'+p+'/kg expected':'no price given'}. Correct?`)}
+function setNum(k,n){const q=k==='q';if(n<(q?1:1)||n>(q?5000:100)){pend={k,n};step='sanity';say(q?`మీరు ${n} కిలోలు అన్నారా?`:`కిలోకు ${n} రూపాయలు అన్నారా?`,q?`Did you say ${n} kg?`:`Did you say ₹${n} per kg?`);return}
+ F[k]=n;if(!q)F.pa=1;proceed()}
+function handle(t){fails=0;silent=0;
+ switch(step){
+ case'sell':{const n=num(t),v=findV(t);if(v)F.v=v;return n?setNum('q',n):proceed()}
+ case'qty':{const n=num(t);return n?setNum('q',n):say('సంఖ్య అర్థం కాలేదు. మళ్ళీ చెప్పండి.','I could not catch the number. Please say it again.')}
+ case'village':{const v=findV(t);if(v){F.v=v;return proceed()}return say('ఆ ఊరు గుర్తుపట్టలేదు. దగ్గరలో ఉన్న పెద్ద ఊరు చెప్పండి.','I did not recognise that village. Say the nearest big town.')}
+ case'fresh':{if(YEST.test(t))F.f='y';else if(TODAY.test(t))F.f='t';else return say(...Q.fresh);return proceed()}
+ case'price':{if(SKIP.test(t)){F.p=null;F.pa=1;return proceed()}const n=num(t);return n?setNum('p',n):say(...Q.price)}
+ case'confirm':{if(YES.test(t))return search();if(NO.test(t)){step='fixwhich';return say('ఏది సరిదిద్దాలి? ఊరు, కిలోలు, లేదా ధర?','What should I correct? Village, kilos or price?')}return say(...lastQ)}
+ case'fixwhich':{if(/ఊరు|village|vooru|uru/i.test(t))F.v=null;else if(/కిలో|kilo|quantity/i.test(t))F.q=null;else if(/ధర|price|rate/i.test(t))F.pa=0;else return say(...lastQ);return proceed()}
+ case'sanity':{const p=pend;pend=null;if(YES.test(t)){F[p.k]=p.n;if(p.k==='p')F.pa=1}else{if(p.k==='q')F.q=null;else F.pa=0}return proceed()}
+ case'offer':{if(NEXT.test(t)||(NO.test(t)&&!YES.test(t))){idx++;return offer()}if(YES.test(t))return connect();return say(...lastQ)}}}
+function search(){matches=B.filter(b=>b.today&&b.kg>=F.q*.5).map(b=>{const d=km(F.v,b),s=Math.min(b.kg,F.q);return{...b,d,s,sc:s*b.price-d*3}}).sort((x,y)=>y.sc-x.sc).slice(0,3);idx=0;
+ if(!matches.length){step='nobuyer';return say('ఇప్పుడు సరిపోయే బయ్యర్ దొరకలేదు. బయ్యర్ దొరికినప్పుడు మీకు చెప్పమంటారా?','No matching buyer right now. Shall I notify you when one is available?')}
+ offer()}
+function cards(){document.querySelector('.cards')?.remove();const w=h('div','b cards');
+ matches.forEach((m,i)=>{const c=h('div','card'+(i===idx?' top':''));c.append(h('h3','',m.name),h('p','',`${m.place} · ${m.d} km away`),h('p','',`Needs ${m.kg} kg · ₹${m.price}/kg · Available today`));
+  const g=h('p');g.append(h('span','tag','Sample data'));if(F.p&&m.price>=F.p)g.append(h('span','tag','Meets your price'));c.append(g);w.append(c)});chat.append(w)}
+function offer(){if(idx>=matches.length){step='nobuyer';cards();return say('ఇంకా బయ్యర్లు లేరు. బయ్యర్ దొరికినప్పుడు చెప్పమంటారా?','No more buyers for now. Notify you when one matches?')}
+ const m=matches[idx];cards();step='offer';
+ say(`మీ దగ్గరలో ఒక రిజిస్టర్డ్ బయ్యర్ ఉన్నారు. ఆయన ${m.s} కిలోలు తీసుకోవడానికి సిద్ధంగా ఉన్నారు. కిలోకు ${m.price} రూపాయలు ఆఫర్ చేస్తున్నారు. ఆయనతో మాట్లాడాలా?`,`${m.name}, ${m.d} km away, can take ${m.s} kg at ₹${m.price}/kg. Connect?`)}
+function connect(){const m=matches[idx];step='done';const b=$('#cb');b.replaceChildren(h('h2','','Connecting you · బయ్యర్‌తో అనుసంధానం'),h('p','',`Buyer: ${m.name}, ${m.place}`),h('p','',`Farmer village: ${F.v.en}`),h('p','',`Quantity: ${m.s} kg at ₹${m.price}/kg (about ₹${Math.round(m.s*m.price)})`));
+ $('#st').textContent='✔ Request sent to buyer (demo) · ✔ Buyer accepted (demo)';$('#cd').showModal();
+ say('బయ్యర్‌కు మీ వివరాలు పంపాము (డెమో). పికప్ సమయం ఎంచుకోండి.','Details sent to the buyer (demo). Choose a pickup time.')}
+function notify(){step='done';ui();say('సరే, బయ్యర్ దొరికినప్పుడు మీకు చెబుతాం (డెమో).','Saved. We will notify you when a buyer matches (demo).')}
+function low(){fails++;if(fails>=2){note('Too noisy. Use the buttons or type the number below.');say('శబ్దం ఎక్కువగా ఉంది. కింద బటన్లు లేదా అంకెలు వాడండి.','Too noisy. Use the buttons or type below.');$('#txt').focus()}else say('కొంచెం సరిగ్గా చెప్పండి. '+lastQ[0],'Please say that more clearly. '+lastQ[1])}
+function silence(){silent++;if(silent===1)say(...lastQ);else{silent=0;micUsed=0;note('Waiting. Tap the mic when ready.');say('నేను వినడానికి సిద్ధంగా ఉన్నాను. మైక్ నొక్కండి.','I am ready to listen. Tap the mic.')}}
+function listen(){if(!SR||listening)return;rec=new SR();rec.lang='te-IN';rec.maxAlternatives=3;let got=0;const T=setTimeout(()=>rec.stop(),8000);
+ rec.onstart=()=>{listening=1;mic.classList.add('on')};
+ rec.onresult=e=>{got=1;const a=e.results[0][0];if(a.confidence&&a.confidence<.45)low();else{user(a.transcript);handle(a.transcript)}};
+ rec.onerror=e=>{if(/not-allowed|service-not-allowed/.test(e.error)){got=1;micUsed=0;note('Microphone blocked. Use the buttons and text box.')}else if(e.error==='network'){got=1;note('Speech needs internet. Use the text box.')}};
+ rec.onend=()=>{clearTimeout(T);listening=0;mic.classList.remove('on');if(!got&&micUsed&&step!=='done')silence()};
+ try{rec.start()}catch(e){}}
+mic.onclick=()=>{micUsed=1;demo=[];tok++;if('speechSynthesis' in window)speechSynthesis.cancel();if(!SR){note('Voice input needs Chrome. Use the text box.');return}if(listening)rec.stop();else listen()};
+function start(){F={};matches=[];pend=null;step='sell';fails=0;silent=0;chat.replaceChildren();note('');
+ if(!teVoice()&&'speechSynthesis' in window)note('Telugu voice may not be installed on this device. Captions are shown instead.');
+ say('నమస్కారం! మీరు ఏం అమ్మాలనుకుంటున్నారు? ఉదాహరణకు: “నా దగ్గర 200 కిలోలు టమాటాలు ఉన్నాయి, ఈ రోజే అమ్మాలి”','Namaskaram! What would you like to sell? Example: “I have 200 kg of tomatoes, I want to sell today.”')}
+$('#f').onsubmit=e=>{e.preventDefault();const t=$('#txt').value.trim();if(!t)return;$('#txt').value='';demo=[];send(t)};
+$('#yn').onclick=e=>{const v=e.target.dataset.v;if(v){demo=[];send(v)}};
+$('#demo').onclick=()=>{demo=['Naa daggara 200 kilolu tomatoes unnayi, ee roje ammali','Samalkot','taaja','12','avunu','avunu maatladinchandi'];start()};
+$('#cdone').onclick=()=>{$('#cd').close();start()};
+$('#bz').onclick=()=>{$('#bl').replaceChildren(...B.map(b=>h('li','',`${b.name} · ${b.place} · ${b.kg} kg · ₹${b.price}/kg · ${b.today?'today':'tomorrow'}`)));$('#bd').showModal()};
+$('#bclose').onclick=()=>$('#bd').close();
+$('#bp').replaceChildren(...V.map(v=>{const o=h('option','',v.en);o.value=v.id;return o}));
+$('#bf').onsubmit=e=>{e.preventDefault();const v=V.find(x=>x.id===$('#bp').value);B.push({name:$('#bn').value,place:v.en,lat:v.lat,lon:v.lon,kg:+$('#bk').value,price:+$('#bpr').value,today:true});e.target.reset();$('#bz').click()};
+if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=()=>{if(teVoice())note('')};
+start();
+</script></body></html>
